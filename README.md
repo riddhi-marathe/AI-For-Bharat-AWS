@@ -10,26 +10,26 @@ Whether you are a student navigating complex data structures or a senior dev mas
 
 **🚀 Key Features**
 
-Adaptive Roadmapping:  Generates dynamic learning paths based on your current GitHub repository history and skill gaps.
+**Adaptive Roadmapping**:  Generates dynamic learning paths based on your current GitHub repository history and skill gaps.
 
-Contextual ELI5 :  Translates complex codebases and "dry" documentation into simplified, digestible concepts using LLMs.
+**Contextual ELI5** :  Translates complex codebases and "dry" documentation into simplified, digestible concepts using LLMs.
 
-Interactive Knowledge Graphs:  Visualizes the hierarchy of technical concepts, showing how languages and frameworks interconnect.
+**Interactive Knowledge Graphs**:  Visualizes the hierarchy of technical concepts, showing how languages and frameworks interconnect.
 
-RAG-Powered Tutor:  Query specific local repositories or live documentation URLs for instant, grounded technical answers.
+**RAG-Powered Tutor**:  Query specific local repositories or live documentation URLs for instant, grounded technical answers.
 
-Developer Flow Mode:  A minimalist interface designed to minimize cognitive load and prevent context switching.
+**Developer Flow Mode**:  A minimalist interface designed to minimize cognitive load and prevent context switching.
 
 **🛠 Tech Stack**
-Frontend: Next.js 14 (App Router), Tailwind CSS, Framer Motion.
+**Frontend**: Next.js 14 (App Router), Tailwind CSS, Framer Motion.
 
-Backend: FastAPI (Python), Pydantic.
+**Backend**: FastAPI (Python), Pydantic.
 
-Orchestration: LangChain / LlamaIndex.
+**Orchestration**: LangChain / LlamaIndex.
 
-Intelligence: GPT-4o / Claude 3.5 Sonnet / Llama-3 (via Groq).Vector Store: ChromaDB or Pinecone.
+**Intelligence**: GPT-4o / Claude 3.5 Sonnet / Llama-3 (via Groq).Vector Store: ChromaDB or Pinecone.
 
-Visualizations: D3.js / React Flow.
+**Visualizations**: D3.js / React Flow.
 
 **📂 Project Structure**
 
