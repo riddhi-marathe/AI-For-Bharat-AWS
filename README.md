@@ -20,7 +20,10 @@ Whether you are a student navigating complex data structures or a senior dev mas
 
 **Developer Flow Mode**:  A minimalist interface designed to minimize cognitive load and prevent context switching.
 
+
 **🛠 Tech Stack**
+
+
 **Frontend**: Next.js 14 (App Router), Tailwind CSS, Framer Motion.
 
 **Backend**: FastAPI (Python), Pydantic.
