@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Flow AI - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-main: #0a0b10; --bg-panel: #13141c; --bg-card: #1c1d29;
+            --accent-purple: #9d4edd; --accent-cyan: #00f2fe; --accent-yellow: #f59e0b;
+            --text-main: #ffffff; --text-muted: #94a3b8; --border-color: rgba(255, 255, 255, 0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
+        a { text-decoration: none; color: inherit; }
+
+        .sidebar { width: 260px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 20px; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .logo span { background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .nav-item { padding: 12px 16px; border-radius: 12px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(157, 78, 221, 0.15); color: white; border: 1px solid rgba(157, 78, 221, 0.5); box-shadow: 0 0 15px rgba(157, 78, 221, 0.2); }
+        .user-profile { display: flex; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-purple); display: flex; justify-content: center; align-items: center; font-weight: bold; }
+
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; }
+        .search-bar { background: var(--bg-card); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 20px; width: 300px; color: white; }
+        .topbar-right { display: flex; align-items: center; gap: 20px; color: var(--text-muted); }
+        .logout-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: 600; }
+
+        .dashboard-content { padding: 0 40px 40px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .left-column { display: flex; flex-direction: column; gap: 30px; }
+        .right-column { display: flex; flex-direction: column; gap: 30px; }
+
+        .welcome-section h1 { font-size: 2.2rem; font-weight: 600; }
+        .welcome-section h1 span { color: var(--accent-cyan); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); position: relative; overflow: hidden; }
+        .stat-card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+        .stat-card .value { font-size: 1.8rem; font-weight: bold; }
+        
+        .card-streak { border-left: 4px solid var(--accent-yellow); box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
+        .card-hours { border-left: 4px solid var(--text-muted); }
+        .card-completion { border-left: 4px solid var(--accent-cyan); display: flex; flex-direction: column; align-items: center; }
+        .card-session { border-left: 4px solid var(--accent-purple); }
+
+        .panel { background: var(--bg-card); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .ai-mini-card { background: rgba(157, 78, 221, 0.1); border: 1px solid rgba(157, 78, 221, 0.3); padding: 16px; border-radius: 12px; margin-bottom: 20px; }
+        .btn-glow { display: block; width: 100%; padding: 10px; background: linear-gradient(90deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: bold; text-align: center; margin-top: 15px; cursor: pointer; }
+        
+        .task-item { background: var(--bg-panel); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+        .task-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; font-size: 0.95rem; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; background: var(--accent-cyan); border-radius: 3px; width: 0%; transition: width 1s ease-in-out; }
+        .btn-action { background: rgba(0, 242, 254, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+
+        /* --- LEARNING JOURNEY MAP STYLES --- */
+        .journey-container { padding: 40px 20px 20px; position: relative; }
+        .journey-track { display: flex; justify-content: space-between; align-items: center; position: relative; width: 100%; }
+        
+        .journey-track::before { content: ''; position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 6px; background: rgba(255,255,255,0.1); z-index: 0; border-radius: 3px; }
+        
+        .journey-progress-line { position: absolute; top: 50%; left: 0; transform: translateY(-50%); height: 6px; background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan)); z-index: 1; border-radius: 3px; transition: width 1.5s ease-in-out; }
+        
+        .journey-node { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        
+        .node-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; transition: all 0.3s; color: var(--text-muted); }
+        .node-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; position: absolute; top: 55px; text-align: center; }
+        .node-label span { display: block; font-size: 0.7rem; font-weight: 400; opacity: 0.7; margin-top: 2px; }
+
+        .journey-node.completed .node-icon { background: var(--accent-purple); border-color: var(--accent-purple); color: white; box-shadow: 0 0 15px rgba(157, 78, 221, 0.4); }
+        .journey-node.completed .node-label { color: white; }
+
+        .journey-node.active .node-icon { background: var(--bg-card); border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 254, 0.5); animation: pulse-cyan 2s infinite; }
+        .journey-node.active .node-label { color: var(--accent-cyan); font-weight: bold; }
+
+        .journey-node.locked .node-icon { background: var(--bg-main); opacity: 0.5; }
+
+        @keyframes pulse-cyan {
+            0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 242, 254, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+        }
+
+        @media (max-width: 1024px) { .dashboard-content { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+            <span>LEARNFLOW AI</span>
+        </div>
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-item active">Dashboard</a>
+            <a href="{{ url_for('coding_workspace') }}" class="nav-item">Interactive Workspace</a>
+            <a href="{{ url_for('custom_tests') }}" class="nav-item">My Courses & Tests</a>
+            <a href="{{ url_for('ai_chatbot') }}" class="nav-item">AI Tutor Assistant</a>
+            <a href="{{ url_for('analytics') }}" class="nav-item">Analytics</a>
+        </div>
+        <div class="user-profile">
+            <div class="avatar">{{ username[0] | upper }}</div>
+            <div class="user-info">
+                <h4>{{ username }}</h4>
+                <p>● Active student</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="topbar">
+            <input type="text" class="search-bar" placeholder="🔍 Search courses, notes...">
+            <div class="topbar-right">
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="left-column">
+                <div class="welcome-section">
+                    <h1>Welcome back, {{ username }}!</h1>
+                    <h1><span>Ready to Learn?</span></h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card card-streak">
+                        <h3>Daily Learning Streak</h3>
+                        <div class="value">🔥 {{ streak }} days</div>
+                    </div>
+                    <div class="stat-card card-hours">
+                        <h3>Total Hours Learned</h3>
+                        <div class="value">{{ hours_learned }} hrs</div>
+                    </div>
+                    <div class="stat-card card-completion">
+                        <h3>Tests Passed: {{ passed_tests }}/{{ total_tests }}</h3>
+                        <div style="width: 80px; height: 80px;">
+                            <canvas id="donutChart" data-chart='{{ donut_data | tojson }}'></canvas>
+                        </div>
+                    </div>
+                    <div class="stat-card card-session">
+                        <h3>Next Goal</h3>
+                        <div class="value" style="font-size: 1.2rem; color: var(--accent-purple);">Solve 1 Bug</div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">In Workspace</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Learning Tracker & Journey Map</h3>
+                        <span style="color: var(--accent-cyan); font-size: 0.85rem; font-weight: 600;">
+                            Module {{ 5 if completion_percent >= 80 else 4 if completion_percent >= 60 else 3 if completion_percent >= 40 else 2 if completion_percent >= 20 else 1 }} in progress
+                        </span>
+                    </div>
+                    
+                    <div class="journey-container">
+                        <div class="journey-track">
+                            <div class="journey-progress-line" id="journey-line" data-width="{{ completion_percent }}"></div>
+                            
+                            <div class="journey-node {{ 'completed' if completion_percent >= 20 else 'active' }}">
+                                <div class="node-icon">{{ '✓' if completion_percent >= 20 else '⚡' }}</div>
+                                <div class="node-label">Python Basics<span>{{ 'Completed' if completion_percent >= 20 else 'Current Focus' }}</span></div>
+                            </div>
+                            
+                            <div class="journey-node {{ 'completed' if completion_percent >= 40 else 'active' if completion_percent >= 20 else 'locked' }}">
+                                <div class="node-icon">{{ '✓' if completion_percent >= 40 else '⚡' if completion_percent >= 20 else '🔒' }}</div>
+                                <div class="node-label">Data Structures<span>{{ 'Completed' if completion_percent >= 40 else 'Current Focus' if completion_percent >= 20 else 'Locked' }}</span></div>
+                            </div>
+                            
+                            <div class="journey-node {{ 'completed' if completion_percent >= 60 else 'active' if completion_percent >= 40 else 'locked' }}">
+                                <div class="node-icon">{{ '✓' if completion_percent >= 60 else '⚡' if completion_percent >= 40 else '🔒' }}</div>
+                                <div class="node-label">Algorithms<span>{{ 'Completed' if completion_percent >= 60 else 'Current Focus' if completion_percent >= 40 else 'Locked' }}</span></div>
+                            </div>
+                            
+                            <div class="journey-node {{ 'completed' if completion_percent >= 80 else 'active' if completion_percent >= 60 else 'locked' }}">
+                                <div class="node-icon">{{ '✓' if completion_percent >= 80 else '⚡' if completion_percent >= 60 else '🔒' }}</div>
+                                <div class="node-label">AWS Bedrock API<span>{{ 'Completed' if completion_percent >= 80 else 'Current Focus' if completion_percent >= 60 else 'Locked' }}</span></div>
+                            </div>
+                            
+                            <div class="journey-node {{ 'completed' if completion_percent >= 100 else 'active' if completion_percent >= 80 else 'locked' }}">
+                                <div class="node-icon">{{ '🏆' if completion_percent >= 100 else '⚡' if completion_percent >= 80 else '🔒' }}</div>
+                                <div class="node-label">AI Mastery<span>{{ 'Mastered' if completion_percent >= 100 else 'Current Focus' if completion_percent >= 80 else 'Locked' }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                </div>
+
+            </div>
+
+            <div class="right-column">
+                <div class="panel">
+                    <div class="panel-header"><h3>AI Tutor Assistant</h3></div>
+                    <div class="ai-mini-card">
+                        <h4 style="color: var(--accent-cyan); margin-bottom: 5px;">Flow</h4>
+                        <p style="font-size: 0.9rem; line-height: 1.4;">Welcome {{ username }}! Want to review a new concept before coding?</p>
+                        <a href="{{ url_for('ai_chatbot') }}" class="btn-glow">Yes, let's start</a>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header"><h3>Overall Progress</h3></div>
+                    
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span>Platform Completion</span>
+                            <span>{{ completion_percent }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="platform-progress" data-progress="{{ completion_percent }}"></div>
+                        </div>
+                        <a href="{{ url_for('custom_tests') }}" class="btn-action">Take a Test</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- TIME TRACKER HEARTBEAT ---
+        setInterval(function() {
+            fetch('/track_time', { method: 'POST' });
+        }, 60000);
+
+        // --- DYNAMIC PROGRESS BAR SETTER ---
+        const progressBar = document.getElementById('platform-progress');
+        setTimeout(() => {
+            progressBar.style.width = progressBar.getAttribute('data-progress') + '%';
+        }, 300);
+
+        // --- DYNAMIC DONUT CHART ---
+        const donutCanvas = document.getElementById('donutChart');
+        const chartData = JSON.parse(donutCanvas.getAttribute('data-chart'));
+        
+        const donutCtx = donutCanvas.getContext('2d');
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: ['#00f2fe', '#1c1d29'],
+                    borderWidth: 0,
+                    cutout: '75%'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { enabled: false } } }
+        });
+    </script>
+</body>
+</html>

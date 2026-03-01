@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Flow AI - Master Coding with AI</title>
+    <style>
+        /* Modern CSS Reset & Base Styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #333; line-height: 1.6; }
+        a { text-decoration: none; }
+        
+        /* Navigation Bar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: bold; color: #007BFF; display: flex; align-items: center; gap: 10px; }
+        .nav-links a { margin-left: 20px; color: #555; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #007BFF; }
+        .btn-outline { border: 2px solid #007BFF; color: #007BFF; padding: 8px 16px; border-radius: 6px; }
+        .btn-outline:hover { background: #007BFF; color: white; }
+        .btn-primary { background: #007BFF; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: background 0.3s; }
+        .btn-primary:hover { background: #0056b3; }
+
+        /* Hero Section */
+        .hero { text-align: center; padding: 100px 20px; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); }
+        .hero h1 { font-size: 3rem; color: #1e293b; margin-bottom: 20px; }
+        .hero h1 span { color: #007BFF; }
+        .hero p { font-size: 1.2rem; color: #475569; max-width: 600px; margin: 0 auto 30px; }
+        .hero .cta-buttons { display: flex; justify-content: center; gap: 15px; }
+
+        /* Features Section */
+        .features-section { padding: 80px 50px; text-align: center; }
+        .features-section h2 { font-size: 2.2rem; margin-bottom: 50px; color: #1e293b; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
+        .feature-card { background: white; padding: 40px 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; border-top: 4px solid transparent; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .feature-card.code { border-top-color: #28a745; }
+        .feature-card.ai { border-top-color: #8a2be2; }
+        .feature-card.test { border-top-color: #ffc107; }
+        
+        .feature-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: #1e293b; }
+        .feature-card p { color: #64748b; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 20px; background: #1e293b; color: #94a3b8; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            Learn Flow AI
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('login') }}" class="btn-outline">Log In</a>
+            <a href="{{ url_for('register') }}" class="btn-primary">Sign Up Free</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Master Coding with <span>AI-Powered</span> Learning</h1>
+        <p>An interactive workspace, intelligent problem-solving tutor, and custom testing engine all in one place. Say goodbye to getting stuck.</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('register') }}" class="btn-primary" style="font-size: 1.1rem; padding: 12px 24px;">Start Learning Now</a>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <h2>Everything You Need to Succeed</h2>
+        <div class="grid">
+            
+            <div class="feature-card code">
+                <h3>Interactive Coding</h3>
+                <p>Write, run, and debug your Python code directly in your browser. Our built-in execution engine provides instant feedback.</p>
+            </div>
+            
+            <div class="feature-card ai">
+                <h3>AI Problem Solving Tutor</h3>
+                <p>Powered by Google Gemini. Get un-stuck fast with an intelligent chat assistant that guides you without giving away the answer.</p>
+            </div>
+            
+            <div class="feature-card test">
+                <h3>Custom Test Creator</h3>
+                <p>Teachers and students can build custom coding challenges. Test your logic against expected outputs to ensure your code is perfect.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 Learn Flow AI. Built for the future of education.</p>
+    </footer>
+
+</body>
+</html>

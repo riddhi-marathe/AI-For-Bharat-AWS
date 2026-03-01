@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workspace - Learn Flow AI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .header { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header a { color: #00ce8d; text-decoration: none; font-weight: bold; }
+        
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Editor Section */
+        .editor-container { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #ddd; }
+        .toolbar { padding: 10px; background: #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .run-btn { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .run-btn:hover { background: #218838; }
+        #editor { flex: 1; width: 100%; font-size: 16px; }
+
+        /* Terminal/Output Section */
+        .output-container { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; color: #d4d4d4; }
+        .output-header { padding: 10px; background: #2d2d2d; font-weight: bold; border-bottom: 1px solid #444; }
+        #output { padding: 15px; flex: 1; overflow-y: auto; white-space: pre-wrap; font-family: monospace; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span>Learn Flow AI - Python Workspace</span>
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </div>
+
+    <div class="workspace">
+        <div class="editor-container">
+            <div class="toolbar">
+                <span>main.py</span>
+                <button class="run-btn" onclick="runCode()">▶ Run Code</button>
+            </div>
+            <div id="editor">print("Hello, Learn Flow AI!")</div>
+        </div>
+
+        <div class="output-container">
+            <div class="output-header">Terminal Output</div>
+            <div id="output">Waiting for execution...</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the Ace Editor
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai"); // Dark theme
+        editor.session.setMode("ace/mode/python"); // Syntax highlighting for Python
+
+        // Function to send code to Flask backend
+        async function runCode() {
+            const code = editor.getValue();
+            const outputDiv = document.getElementById('output');
+            
+            outputDiv.innerText = "Running...";
+
+            try {
+                const response = await fetch('/run_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const data = await response.json();
+                outputDiv.innerText = data.output || "Program finished with no output.";
+            } catch (error) {
+                outputDiv.innerText = "Error connecting to the server.";
+            }
+        }
+    </script>
+</body>
+</html>

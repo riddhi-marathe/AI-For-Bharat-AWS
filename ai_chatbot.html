@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Learn Flow AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Base Styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #333; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Navigation (Matches other pages) */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10; }
+        .navbar h2 { font-size: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+        .navbar a { text-decoration: none; color: #007BFF; font-weight: 600; padding: 8px 16px; border: 2px solid #007BFF; border-radius: 6px; transition: all 0.3s; }
+        .navbar a:hover { background: #007BFF; color: white; }
+
+        /* Chat Layout */
+        .chat-wrapper { flex: 1; display: flex; justify-content: center; padding: 20px; overflow: hidden; }
+        .chat-container { width: 100%; max-width: 900px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; }
+        
+        /* Messages Area */
+        .chat-history { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background-color: #f8fafc; scroll-behavior: smooth; }
+        
+        /* Message Rows & Avatars */
+        .msg-row { display: flex; gap: 15px; align-items: flex-end; width: 100%; }
+        .msg-row.user { justify-content: flex-end; flex-direction: row-reverse; }
+        
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .ai-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .user-avatar { background: #007BFF; color: white; }
+        
+        /* Chat Bubbles */
+        .bubble { max-width: 75%; padding: 15px 20px; border-radius: 18px; line-height: 1.6; font-size: 1.05rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .ai-bubble { background: white; color: #334155; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .user-bubble { background: #007BFF; color: white; border-bottom-right-radius: 4px; }
+        
+        /* Markdown / Code Block Styling inside AI Bubbles */
+        .ai-bubble pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; }
+        .ai-bubble code { font-family: 'Courier New', Courier, monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #e11d48; font-size: 0.9em; }
+        .ai-bubble pre code { background: none; color: inherit; padding: 0; }
+        .ai-bubble p { margin-bottom: 10px; }
+        .ai-bubble p:last-child { margin-bottom: 0; }
+
+        /* Typing Indicator Animation */
+        .typing-indicator { display: flex; gap: 5px; padding: 10px 5px; }
+        .dot { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Input Area */
+        .input-panel { padding: 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 15px; align-items: flex-end; }
+        .input-wrapper { flex: 1; position: relative; }
+        #user-input { width: 100%; padding: 15px 20px; border: 1px solid #cbd5e1; border-radius: 25px; font-size: 1rem; font-family: inherit; transition: all 0.3s; outline: none; background: #f8fafc; resize: none; overflow: hidden; height: 52px; line-height: 20px; }
+        #user-input:focus { border-color: #007BFF; background: white; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+        
+        .btn-send { width: 52px; height: 52px; border-radius: 50%; background: #007BFF; color: white; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.3s; flex-shrink: 0; }
+        .btn-send:hover:not(:disabled) { background: #0056b3; transform: scale(1.05); }
+        .btn-send:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .btn-send svg { width: 24px; height: 24px; margin-left: 2px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h2>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#764ba2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            AI Tutor
+        </h2>
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </nav>
+
+    <div class="chat-wrapper">
+        <div class="chat-container">
+            
+            <div class="chat-history" id="chat-history">
+                <div class="msg-row ai">
+                    <div class="avatar ai-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                    </div>
+                    <div class="bubble ai-bubble">
+                        <p>Hello <strong>{{ username }}</strong>! I am your Learn Flow AI tutor. How can I help you level up your coding skills today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-panel">
+                <div class="input-wrapper">
+                    <textarea id="user-input" rows="1" placeholder="Ask about Python, debugging, or a new concept..." onkeydown="handleKeyDown(event)"></textarea>
+                </div>
+                <button class="btn-send" id="send-btn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const chatHistory = document.getElementById('chat-history');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Allow 'Enter' to send, 'Shift+Enter' for new line
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Auto-expand textarea as user types
+        userInput.addEventListener('input', function() {
+            this.style.height = '52px';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.value === '') this.style.height = '52px';
+        });
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. Add User message
+            appendMessage('user', text);
+            userInput.value = '';
+            userInput.style.height = '52px';
+            sendBtn.disabled = true;
+
+            // 2. Add AI Thinking Indicator
+            const thinkingId = appendTypingIndicator();
+
+            try {
+                // 3. Send to Backend
+                const response = await fetch('/ask_ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                
+                // 4. Replace thinking indicator with actual response parsed as Markdown
+                const thinkingElement = document.getElementById(thinkingId);
+                thinkingElement.innerHTML = marked.parse(data.reply);
+                
+            } catch (error) {
+                document.getElementById(thinkingId).innerText = "Error connecting to the AI server. Please try again.";
+            }
+
+            sendBtn.disabled = false;
+            scrollToBottom();
+            userInput.focus();
+        }
+
+        function appendMessage(sender, text) {
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('msg-row', sender);
+            
+            const avatarHtml = sender === 'user' 
+                ? `<div class="avatar user-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>`
+                : `<div class="avatar ai-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></div>`;
+            
+            rowDiv.innerHTML = `
+                ${avatarHtml}
+                <div class="bubble ${sender}-bubble">${text}</div>
+            `;
+            
+            chatHistory.appendChild(rowDiv);
+            scrollToBottom();
+        }
+
+        function appendTypingIndicator() {
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('msg-row', 'ai');
+            
+            const uniqueId = 'msg-' + Date.now();
+            
+            rowDiv.innerHTML = `
+                <div class="avatar ai-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></div>
+                <div class="bubble ai-bubble" id="${uniqueId}">
+                    <div class="typing-indicator">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatHistory.appendChild(rowDiv);
+            scrollToBottom();
+            return uniqueId;
+        }
+
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    </script>
+</body>
+</html>
